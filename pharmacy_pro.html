@@ -1,0 +1,1177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Pharmacy Management System - Professional</title>
+<link rel="icon" href="icon.jpg">
+<style>
+body { font-family: Arial; margin:0; padding:0; background:#f0f2f5; color:#111;}
+header { background:#4CAF50; color:white; padding:15px; text-align:center; }
+.container { width:95%; margin:20px auto; background:white; padding:20px; border-radius:10px; box-shadow:0 0 10px rgba(0,0,0,0.1);}
+input, select, button, textarea { padding:5px 10px; margin:5px; }
+button { cursor:pointer; background:#4CAF50; color:white; border:none; border-radius:5px;}
+button:hover{background:#45a049;}
+table { width:100%; border-collapse:collapse; margin-top:10px; }
+th,td { border:1px solid #ddd; padding:10px; text-align:center;}
+th { background:#4CAF50; color:rgb(146, 9, 9);}
+#loginPage,#adminPage,#customerPage,#customerDetailsPage,#patientDetailsPage,#patientPage { display:none;}
+.medicine-img { width:50px; height:50px; object-fit:cover; }
+.side-menu { width:200px; float:left; background:#f7f7f7; padding:15px; border-right:1px solid #ddd; height:100%; }
+.side-menu button { width:100%; margin:5px 0; }
+.main-content { margin-left:220px; }
+/* login background */
+#loginPage {
+    display: none;
+    width: 100%;
+    height: 100vh;
+    background: url('sanjai.png.jpg') no-repeat center center;
+    background-size: cover;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+#loginPage .container {
+    background: rgba(255, 255, 255, 0.95);
+    padding: 30px;
+    border-radius: 10px;
+    box-shadow: 0 0 15px rgba(0,0,0,0.3);
+}
+/* small badges for alerts */
+.alerts { margin:10px 0; }
+.alert { display:inline-block; padding:8px 12px; border-radius:6px; margin-right:8px; font-weight:bold; }
+.alert.stock { background:#fff3cd; color:#856404; border:1px solid #ffeeba; }
+.alert.expiry { background:#f8d7da; color:#721c24; border:1px solid #f5c6cb; }
+.summary { display:flex; gap:10px; margin:10px 0; }
+.summary .card { flex:1; background:#fafafa; padding:12px; border-radius:8px; text-align:center; box-shadow:0 2px 6px rgba(0,0,0,0.04); }
+.top-controls { display:flex; gap:10px; align-items:center; margin-bottom:10px; }
+.search-input { padding:6px 10px; border-radius:6px; border:1px solid #ccc; min-width:200px; }
+.dark-mode { position:fixed; right:16px; top:80px; background:#333; color:#fff; padding:8px 10px; border-radius:6px; cursor:pointer; }
+</style>
+</head>
+<body>
+<header style="display:flex; align-items:center; justify-content:space-between; padding:12px 20px;">
+  <h1 style="margin:0; font-size:1.2em;">The Sanjai's Co. Pharmacy Management System</h1>
+  <div id="userBar" style="display:flex; align-items:center; gap:8px;">
+    <div id="currentUserLabel" style="font-weight:bold; color:white; background:rgba(0,0,0,0.15); padding:6px 10px; border-radius:6px;">Not logged</div>
+    <select id="quickAddSelect" style="padding:6px; border-radius:6px; display:none;">
+      <option value="">Add...</option>
+      <option value="customer">Customer</option>
+      <option value="patient">Patient</option>
+    </select>
+    <button id="quickAddBtn" style="display:none; padding:6px 10px;" onclick="handleQuickAdd()">Add</button>
+    <button id="logoutTopBtn" title="Logout" onclick="logout()" style="padding:6px 10px; background:#c33;">Logout 🔒</button>
+    
+  </div>
+</header>
+
+<!-- Dark mode toggle -->
+<div id="darkToggle" class="dark-mode"onclick="toggleDarkMode()">Dark mode</div>
+
+<!-- Login Page -->
+<center>
+    
+<div id="loginPage" class="container">
+  <h2>👨‍⚕Login👨‍⚕</h2>
+  <br>
+  <br>
+  <br>
+  <br>
+  <br>
+  <input type="text" id="username" placeholder="Username">
+  <input type="password" id="password" placeholder="Password">
+  <select id="role">
+    <option value="">Select Role</option>
+    <option value="admin">Admin/Officer</option>
+    <option value="customer">Customer</option>
+    <option value="patient">Patient</option>
+  </select>
+  <button onclick="login()">Login</button>
+  <button type="button" id="quickRegisterBtn" onclick="quickRegister()" style="display:none; margin-left:8px;">Register</button>
+  <datalist id="customersList"></datalist>
+  <datalist id="patientsList"></datalist>
+</center>
+
+<!-- Customer Details Page (for first login) -->
+<div id="customerDetailsPage" class="container">
+  <h2>Enter Your Details (Customer)</h2>
+  <input type="text" id="custName" placeholder="Full Name"><br>
+  <input type="number" id="custAge" placeholder="Age"><br>
+  <input type="date" id="custDOB" placeholder="DOB"><br>
+  <input type="text" id="custBlood" placeholder="Blood Group"><br>
+  <input type="text" id="custFather" placeholder="Father Name"><br>
+  <input type="text" id="custAddress" placeholder="Address"><br>
+  <input type="text" id="custLocation" placeholder="Location"><br>
+  <input type="text" id="custPhone" placeholder="Phone Number"><br>
+  <button onclick="saveCustomerDetails()">Save Details</button>
+</div>
+
+<!-- Patient Details Page (for first-time patient login) -->
+<div id="patientDetailsPage" class="container">
+  <h2>Patient Registration - Enter Your Details</h2>
+  <input type="text" id="patName" placeholder="Full Name"><br>
+  <input type="number" id="patAge" placeholder="Age"><br>
+  <input type="date" id="patDOB" placeholder="DOB"><br>
+  <input type="text" id="patBlood" placeholder="Blood Group"><br>
+  <input type="text" id="patFather" placeholder="Father/Guardian Name"><br>
+  <input type="text" id="patAddress" placeholder="Address"><br>
+  <input type="text" id="patLocation" placeholder="Location"><br>
+  <input type="text" id="patPhone" placeholder="Phone Number"><br>
+  <input type="email" id="patEmail" placeholder="Email (optional)"><br>
+  <select id="patGender"><option value="">Gender</option><option>Male</option><option>Female</option><option>Other</option></select><br>
+  <input type="text" id="patEmergency" placeholder="Emergency Contact"><br>
+  <textarea id="patNotes" placeholder="Medical notes / allergies (optional)" rows="3" style="width:95%;"></textarea><br>
+  <button onclick="savePatientDetails()">Save Patient Details</button>
+</div>
+
+<!-- Admin Page -->
+<div id="adminPage" class="container">
+  <div class="side-menu">
+    <button onclick="showSection('inventory')">Inventory</button>
+    <button onclick="showSection('sales')">Sales</button>
+    <button onclick="showSection('customers')">Customers</button>
+    <button onclick="showSection('patients')">Patients</button>
+    <button onclick="logout()">Logout</button>
+  </div>
+  <div class="main-content">
+    <!-- Alerts + Dashboard summary -->
+    <div id="alerts" class="alerts"></div>
+    <div id="dashboardSummary" class="summary"></div>
+
+    <!-- Inventory Section -->
+    <div id="inventorySection">
+      <h2>Inventory Management</h2>
+      <div class="top-controls">
+        <input type="text" id="invSearch" class="search-input" placeholder="Search medicine by name..." oninput="searchInventory()">
+        <button onclick="clearInventoryFilters()">Clear</button>
+      </div>
+
+      <input type="text" id="medId" placeholder="Medicine ID">
+      <input type="text" id="medName" placeholder="Medicine Name">
+      <input type="text" id="medType" placeholder="Type (Fever/Cold/Back Pain)">
+      <input type="number" id="medPrice" placeholder="Price">
+      <input type="number" id="medQty" placeholder="Quantity">
+      <input type="date" id="medExpiry" placeholder="Expiry Date">
+      <input type="file" id="medImg">
+      <button onclick="addMedicine()">Add/Update</button>
+
+      <h3>Medicines</h3>
+      <table id="inventoryTable">
+        <thead><tr>
+          <th>ID</th><th>Name</th><th>Type</th><th>Price</th><th>Qty</th><th>Expiry</th><th>Image</th><th>Added Time</th><th>Action</th>
+        </tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+
+    <!-- Sales Section -->
+    <div id="salesSection" style="display:none;">
+      <h2>Sales</h2>
+      <table id="salesTable">
+        <thead><tr>
+          <th>Customer/Patient</th><th>Medicine</th><th>Qty</th><th>Total</th><th>Purchase Time</th>
+        </tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+
+    <!-- Customers Section -->
+    <div id="customersSection" style="display:none;">
+      <h2>Customers</h2>
+      <div style="margin-bottom:10px;">
+        <button onclick="showAdminCustomerForm()">Add Customer</button>
+      </div>
+      <div id="adminCustomerForm" style="display:none; border:1px solid #ddd; padding:10px; margin-bottom:10px; border-radius:6px; background:#fafafa;">
+        <h3 id="adminCustomerFormTitle">Add Customer</h3>
+        <input type="text" id="adminCustUsername" placeholder="Username (optional, autogenerated if empty)"><br>
+        <input type="text" id="adminCustName" placeholder="Full Name"><br>
+        <input type="number" id="adminCustAge" placeholder="Age"><br>
+        <input type="date" id="adminCustDOB" placeholder="DOB"><br>
+        <input type="text" id="adminCustBlood" placeholder="Blood Group"><br>
+        <input type="text" id="adminCustFather" placeholder="Father Name"><br>
+        <input type="text" id="adminCustAddress" placeholder="Address"><br>
+        <input type="text" id="adminCustLocation" placeholder="Location"><br>
+        <input type="text" id="adminCustPhone" placeholder="Phone Number"><br>
+        <div style="margin-top:8px;">
+          <button onclick="adminSaveCustomer()">Save Customer</button>
+          <button onclick="adminCancelCustomerForm()" style="background:#999;">Cancel</button>
+        </div>
+      </div>
+      <table id="customersTable">
+        <thead><tr>
+          <th>Name</th><th>Age</th><th>DOB</th><th>Blood</th><th>Father</th><th>Address</th><th>Location</th><th>Phone</th><th>Action</th>
+        </tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+
+    <!-- Patients Section -->
+    <div id="patientsSection" style="display:none;">
+      <h2>Patients</h2>
+      <div style="margin-bottom:10px;">
+        <button onclick="showAdminPatientForm()">Add Patient</button>
+      </div>
+      <div id="adminPatientForm" style="display:none; border:1px solid #ddd; padding:10px; margin-bottom:10px; border-radius:6px; background:#fafafa;">
+        <h3 id="adminPatientFormTitle">Add Patient</h3>
+        <input type="text" id="adminPatUsername" placeholder="Username (optional, autogenerated if empty)"><br>
+        <input type="text" id="adminPatName" placeholder="Full Name"><br>
+        <input type="number" id="adminPatAge" placeholder="Age"><br>
+        <input type="date" id="adminPatDOB" placeholder="DOB"><br>
+        <input type="text" id="adminPatBlood" placeholder="Blood Group"><br>
+        <input type="text" id="adminPatFather" placeholder="Father/Guardian Name"><br>
+        <input type="text" id="adminPatAddress" placeholder="Address"><br>
+        <input type="text" id="adminPatLocation" placeholder="Location"><br>
+        <input type="text" id="adminPatPhone" placeholder="Phone Number"><br>
+        <input type="email" id="adminPatEmail" placeholder="Email (optional)"><br>
+        <select id="adminPatGender"><option value="">Gender</option><option>Male</option><option>Female</option><option>Other</option></select><br>
+        <input type="text" id="adminPatEmergency" placeholder="Emergency Contact"><br>
+        <textarea id="adminPatNotes" placeholder="Medical notes / allergies (optional)" rows="3" style="width:95%;"></textarea><br>
+        <div style="margin-top:8px;">
+          <button onclick="adminSavePatient()">Save Patient</button>
+          <button onclick="adminCancelPatientForm()" style="background:#999;">Cancel</button>
+        </div>
+      </div>
+      <table id="patientsTable">
+        <thead><tr>
+          <th>Username</th><th>Name</th><th>Age</th><th>DOB</th><th>Blood</th><th>Phone</th><th>Email</th><th>Emergency</th><th>Notes</th><th>Action</th>
+        </tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- Customer Page -->
+<div id="customerPage" class="container">
+  <h2>Customer Dashboard</h2>
+  <div style="position:relative;">
+    <div id="customerUserPanel" style="position:absolute; right:0; top:0; background:#f7f7f7; padding:8px 12px; border-radius:8px; border:1px solid #ddd; display:none; text-align:left;">
+      <div style="font-weight:bold;" id="custPanelName"></div>
+      <div id="custPanelPhone" style="font-size:0.9em; color:#333"></div>
+      <div style="margin-top:6px;"><button onclick="editCustomerFromPanel()" style="padding:6px;">Edit Details</button></div>
+    </div>
+  </div>
+  <button onclick="logout()">Logout</button>
+
+  <div class="top-controls">
+    <input type="text" id="custSearch" class="search-input" placeholder="Search medicines..." oninput="filterMedicinesForCustomer()">
+    <select id="problemFilter">
+      <option value="">All</option>
+      <option value="Fever">Fever</option>
+      <option value="Cold">Cold</option>
+      <option value="Back Pain">Back Pain</option>
+      <option value="Leg Pain">Leg Pain</option>
+      <option value="Ointment">Ointment</option>
+    </select>
+    <button onclick="filterMedicines()">Filter</button>
+  </div>
+
+  <h3>Available Medicines</h3>
+  <table id="customerTable">
+    <thead><tr>
+      <th>Name</th><th>Type</th><th>Price</th><th>Qty</th><th>Expiry</th><th>Image</th><th>Buy</th>
+    </tr></thead>
+    <tbody></tbody>
+  </table>
+
+  <h3>Your Purchase History</h3>
+  <table id="customerSalesTable">
+    <thead><tr>
+      <th>Medicine</th><th>Qty</th><th>Total</th><th>Purchase Time</th>
+    </tr></thead>
+    <tbody></tbody>
+  </table>
+</div>
+
+<!-- Patient Page -->
+<div id="patientPage" class="container">
+  <h2>Patient Dashboard</h2>
+  <div style="position:relative;">
+    <div id="patientUserPanel" style="position:absolute; right:0; top:0; background:#f7f7f7; padding:8px 12px; border-radius:8px; border:1px solid #ddd; display:none; text-align:left;">
+      <div style="font-weight:bold;" id="patPanelName"></div>
+      <div id="patPanelPhone" style="font-size:0.9em; color:#333"></div>
+      <div style="margin-top:6px;"><button onclick="editPatientFromPanel()" style="padding:6px;">Edit Details</button></div>
+    </div>
+  </div>
+  <button onclick="logout()">Logout</button>
+
+  <div class="top-controls">
+    <input type="text" id="patSearch" class="search-input" placeholder="Search medicines..." oninput="filterMedicinesForPatient()">
+    <select id="patProblemFilter">
+      <option value="">All</option>
+      <option value="Fever">Fever</option>
+      <option value="Cold">Cold</option>
+      <option value="Back Pain">Back Pain</option>
+      <option value="Leg Pain">Leg Pain</option>
+      <option value="Ointment">Ointment</option>
+    </select>
+    <button onclick="filterMedicinesForPatient()">Filter</button>
+  </div>
+
+  <h3>Available Medicines</h3>
+  <table id="patientTable">
+    <thead><tr>
+      <th>Name</th><th>Type</th><th>Price</th><th>Qty</th><th>Expiry</th><th>Image</th><th>Buy</th>
+    </tr></thead>
+    <tbody></tbody>
+  </table>
+
+  <h3>Your Purchase History</h3>
+  <table id="patientSalesTable">
+    <thead><tr>
+      <th>Medicine</th><th>Qty</th><th>Total</th><th>Purchase Time</th>
+    </tr></thead>
+    <tbody></tbody>
+  </table>
+</div>
+
+<script>
+/* ------------------- Persistent data via localStorage ------------------- */
+let defaultUsers = [{username:"admin",password:"admin123",role:"admin"},
+                    {username:"customer",password:"cust123",role:"customer"}];
+
+let users = [...defaultUsers]; // we keep these defaults in memory for login check
+let medicines = []; 
+let sales = []; 
+let customers = {}; 
+let patients = {}; 
+
+// track logged-in user
+let currentCustomer = null; // username for customer role
+let currentPatient = null;  // username for patient role
+let currentRole = null;
+
+// localStorage keys
+const KEY_MED = "ph_med"; 
+const KEY_SALES = "ph_sales"; 
+const KEY_CUST = "ph_customers";
+const KEY_PAT = "ph_patients";
+
+// initialization: load from localStorage
+function loadData(){
+  const rawMed = localStorage.getItem(KEY_MED);
+  const rawSales = localStorage.getItem(KEY_SALES);
+  const rawCust = localStorage.getItem(KEY_CUST);
+  const rawPat = localStorage.getItem(KEY_PAT);
+  try{
+    if(rawMed) medicines = JSON.parse(rawMed);
+    if(rawSales) sales = JSON.parse(rawSales);
+    if(rawCust) customers = JSON.parse(rawCust);
+    if(rawPat) patients = JSON.parse(rawPat);
+  }catch(e){
+    console.error("Error parsing storage data", e);
+  }
+  // if no demo meds exist, add a few sample meds so UI isn't empty
+  if(medicines.length === 0){
+    medicines = [
+      {id:"M001",name:"Paracetamol",type:"Fever",price:20,quantity:20,expiry:addDaysISO(180),img:"",addedTime:new Date().toLocaleString()},
+      {id:"M002",name:"Cough Syrup",type:"Cold",price:75,quantity:4,expiry:addDaysISO(60),img:"",addedTime:new Date().toLocaleString()},
+      {id:"M003",name:"Voltaren Gel",type:"Ointment",price:150,quantity:10,expiry:addDaysISO(400),img:"",addedTime:new Date().toLocaleString()}
+    ];
+    saveAll();
+  }
+  refreshLoginDatalists();
+}
+function saveAll(){
+  localStorage.setItem(KEY_MED, JSON.stringify(medicines));
+  localStorage.setItem(KEY_SALES, JSON.stringify(sales));
+  localStorage.setItem(KEY_CUST, JSON.stringify(customers));
+  localStorage.setItem(KEY_PAT, JSON.stringify(patients));
+  refreshLoginDatalists();
+}
+
+function refreshLoginDatalists(){
+  const custList = document.getElementById('customersList');
+  const patList = document.getElementById('patientsList');
+  custList.innerHTML = '';
+  patList.innerHTML = '';
+  Object.keys(customers).forEach(k => {
+    const opt = document.createElement('option'); opt.value = k; opt.text = customers[k].name || k; custList.appendChild(opt);
+  });
+  Object.keys(patients).forEach(k => {
+    const opt = document.createElement('option'); opt.value = k; opt.text = patients[k].name || k; patList.appendChild(opt);
+  });
+}
+
+// show quick register button when selecting role on login
+document.getElementById('role').addEventListener('change', function(){
+  const val = this.value;
+  const btn = document.getElementById('quickRegisterBtn');
+  const unameInput = document.getElementById('username');
+  if(val === 'customer'){
+    unameInput.setAttribute('list','customersList'); btn.style.display='inline-block';
+  } else if(val === 'patient'){
+    unameInput.setAttribute('list','patientsList'); btn.style.display='inline-block';
+  } else { unameInput.removeAttribute('list'); btn.style.display='none'; }
+});
+
+function quickRegister(){
+  const role = document.getElementById('role').value;
+  const username = document.getElementById('username').value.trim();
+  if(role === 'customer'){
+    // if username exists, open details; if not, set as currentCustomer and open details page
+    if(username && customers[username]){ currentCustomer = username; proceedToRole(username, 'customer'); }
+    else { currentCustomer = username || ('cust'+Date.now()); currentRole='customer'; updateUserBar(currentCustomer,'customer'); document.getElementById('loginPage').style.display='none'; document.getElementById('customerDetailsPage').style.display='block'; }
+  } else if(role === 'patient'){
+    if(username && patients[username]){ currentPatient = username; proceedToRole(username, 'patient'); }
+    else { currentPatient = username || ('pat'+Date.now()); currentRole='patient'; updateUserBar(currentPatient,'patient'); document.getElementById('loginPage').style.display='none'; document.getElementById('patientDetailsPage').style.display='block'; }
+  }
+}
+
+/* ------------------- Utilities ------------------- */
+function addDaysISO(days){
+  const d = new Date();
+  d.setDate(d.getDate() + days);
+  return d.toISOString().slice(0,10);
+}
+function daysBetween(dateISO){
+  const now = new Date(); const d = new Date(dateISO);
+  const diff = d - now;
+  return Math.ceil(diff / (1000*60*60*24));
+}
+
+/* ------------------- Login & Role handling ------------------- */
+document.getElementById("loginPage").style.display="block";
+loadData(); updateAllTables();
+
+function login(){
+  const username = document.getElementById("username").value.trim();
+  const password = document.getElementById("password").value;
+  const role = document.getElementById("role").value;
+  if(!username || !password || !role){ alert("Enter username, password and role."); return; }
+  // check default users first
+  const user = users.find(u=>u.username===username && u.password===password && u.role===role);
+  if(user){
+    // default user login
+    proceedToRole(username, role);
+    return;
+  }
+  // for patient role, allow any username/password on first login (we will register)
+  if(role === "patient"){
+    // if patient exists and password not matched - we won't check password because we didn't store it; but we can allow any password for demo
+    if(patients[username]){
+      // existing patient: login (no password checking in this demo)
+      proceedToRole(username, role);
+    } else {
+      // new patient: register flow (we don't store password in this demo, login username is the key)
+      currentPatient = username;
+      currentRole = "patient";
+      updateUserBar(currentPatient, 'patient');
+      document.getElementById("loginPage").style.display="none";
+      document.getElementById("patientDetailsPage").style.display="block";
+    }
+    return;
+  }
+  // for customer role: check customers map keys and known default customer user
+  if(role === "customer"){
+    // check default user
+    const defaultCust = users.find(u=>u.username===username && u.role==="customer" && u.password===password);
+    if(defaultCust){
+      proceedToRole(username, role);
+      return;
+    }
+    // if registered customer exists (we do not store password for registered customers in this demo), just allow login by username
+    if(customers[username]){
+      proceedToRole(username, role);
+      return;
+    } else {
+      // if not existing, create new customer registration flow but we need them to fill details
+      currentCustomer = username;
+      currentRole = "customer";
+      updateUserBar(currentCustomer, 'customer');
+      document.getElementById("loginPage").style.display="none";
+      document.getElementById("customerDetailsPage").style.display="block";
+      return;
+    }
+  }
+  alert("Invalid credentials!");
+}
+
+function proceedToRole(username, role){
+  currentRole = role;
+  // update top user label and quick-add UI
+  updateUserBar(username, role);
+  if(role === "admin"){
+    document.getElementById("loginPage").style.display="none";
+    document.getElementById("adminPage").style.display="block";
+    updateInventoryTable(); updateSalesTable(); updateCustomersTable(); updatePatientsTable(); updateDashboardSummary(); checkAlerts();
+    showSection("inventory");
+  } else if(role === "customer"){
+    currentCustomer = username;
+    document.getElementById("loginPage").style.display="none";
+    document.getElementById("customerPage").style.display="block";
+    updateCustomerTable(); updateCustomerSales(); checkAlerts();
+    populateCustomerPanel();
+  } else if(role === "patient"){
+    currentPatient = username;
+    document.getElementById("loginPage").style.display="none";
+    document.getElementById("patientPage").style.display="block";
+    updatePatientTable(); updatePatientSales(); checkAlerts();
+    populatePatientPanel();
+  }
+}
+/* ------------------- Login & Role handling ------------------- */
+function login(){
+  const username = document.getElementById("username").value.trim();
+  const password = document.getElementById("password").value;
+  const role = document.getElementById("role").value;
+  if(!username || !password || !role){ alert("Enter username, password and role."); return; }
+
+  // check default users first
+  const user = users.find(u=>u.username===username && u.password===password && u.role===role);
+  if(user){
+    proceedToRole(username, role);
+    return;
+  }
+
+  if(role === "patient"){
+    if(patients[username]){
+      proceedToRole(username, role);
+    } else {
+      currentPatient = username;
+      currentRole = "patient";
+      document.getElementById("loginPage").style.display="none";
+      document.getElementById("patientDetailsPage").style.display="block";
+    }
+    return;
+  }
+
+  if(role === "customer"){
+    if(customers[username]){
+      proceedToRole(username, role);
+      return;
+    } else {
+      currentCustomer = username;
+      currentRole = "customer";
+      document.getElementById("loginPage").style.display="none";
+      document.getElementById("customerDetailsPage").style.display="block";
+      return;
+    }
+  }
+
+  alert("Invalid credentials!");
+}
+
+/* ------------------- Customer/Patient Registration ------------------- */
+function saveCustomerDetails(){
+  const name=document.getElementById("custName").value.trim();
+  const age=document.getElementById("custAge").value;
+  const dob=document.getElementById("custDOB").value;
+  const blood=document.getElementById("custBlood").value.trim();
+  const father=document.getElementById("custFather").value.trim();
+  const address=document.getElementById("custAddress").value.trim();
+  const location=document.getElementById("custLocation").value.trim();
+  const phone=document.getElementById("custPhone").value.trim();
+  if(!name||!age||!dob||!blood||!father||!address||!location||!phone){alert("Fill all fields!"); return;}
+
+  // Save customer to the map using username as key
+  if(!currentCustomer) currentCustomer = name.replace(/\s+/g,"").toLowerCase() + Date.now();
+  customers[currentCustomer]={name,age,dob,blood,father,address,location,phone,purchases:[]};
+  
+  saveAll();
+  document.getElementById("customerDetailsPage").style.display="none";
+  document.getElementById("customerPage").style.display="block";
+  updateCustomerTable(); updateCustomerSales(); updateAllTables();
+  populateCustomerPanel();
+}
+
+function savePatientDetails(){
+  const name=document.getElementById("patName").value.trim();
+  const age=document.getElementById("patAge").value;
+  const dob=document.getElementById("patDOB").value;
+  const blood=document.getElementById("patBlood").value.trim();
+  const father=document.getElementById("patFather").value.trim();
+  const address=document.getElementById("patAddress").value.trim();
+  const location=document.getElementById("patLocation").value.trim();
+  const phone=document.getElementById("patPhone").value.trim();
+  const email=document.getElementById("patEmail").value.trim();
+  const gender=document.getElementById("patGender").value;
+  const emergency=document.getElementById("patEmergency").value.trim();
+  const notes=document.getElementById("patNotes").value.trim();
+  if(!name||!age||!dob||!blood||!address||!phone){alert("Fill required fields (Name, Age, DOB, Blood, Address, Phone)"); return;}
+
+  if(!currentPatient) currentPatient = name.replace(/\s+/g,"").toLowerCase() + Date.now();
+  patients[currentPatient] = {
+    username: currentPatient, name, age, dob, blood, father, address, location, phone, email, gender, emergency, notes, purchases:[]
+  };
+  saveAll();
+  document.getElementById("patientDetailsPage").style.display="none";
+  document.getElementById("patientPage").style.display="block";
+  updatePatientsTable(); updatePatientTable(); updatePatientSales();
+  populatePatientPanel();
+}
+
+/* ------------------- Customer/Patient Registration ------------------- */
+function saveCustomerDetails(){
+  const name=document.getElementById("custName").value.trim();
+  const age=document.getElementById("custAge").value;
+  const dob=document.getElementById("custDOB").value;
+  const blood=document.getElementById("custBlood").value.trim();
+  const father=document.getElementById("custFather").value.trim();
+  const address=document.getElementById("custAddress").value.trim();
+  const location=document.getElementById("custLocation").value.trim();
+  const phone=document.getElementById("custPhone").value.trim();
+  if(!name||!age||!dob||!blood||!father||!address||!location||!phone){alert("Fill all fields!"); return;}
+  customers[currentCustomer]={name,age,dob,blood,father,address,location,phone,purchases:[]};
+  saveAll();
+  document.getElementById("customerDetailsPage").style.display="none";
+  document.getElementById("customerPage").style.display="block";
+  updateCustomerTable(); updateCustomerSales(); updateAllTables();
+}
+
+function savePatientDetails(){
+  const name=document.getElementById("patName").value.trim();
+  const age=document.getElementById("patAge").value;
+  const dob=document.getElementById("patDOB").value;
+  const blood=document.getElementById("patBlood").value.trim();
+  const father=document.getElementById("patFather").value.trim();
+  const address=document.getElementById("patAddress").value.trim();
+  const location=document.getElementById("patLocation").value.trim();
+  const phone=document.getElementById("patPhone").value.trim();
+  const email=document.getElementById("patEmail").value.trim();
+  const gender=document.getElementById("patGender").value;
+  const emergency=document.getElementById("patEmergency").value.trim();
+  const notes=document.getElementById("patNotes").value.trim();
+  if(!name||!age||!dob||!blood||!address||!phone){alert("Fill required fields (Name, Age, DOB, Blood, Address, Phone)"); return;}
+  patients[currentPatient] = {
+    username: currentPatient, name, age, dob, blood, father, address, location, phone, email, gender, emergency, notes, purchases:[]
+  };
+  saveAll();
+  document.getElementById("patientDetailsPage").style.display="none";
+  document.getElementById("patientPage").style.display="block";
+  updatePatientsTable(); updatePatientTable(); updatePatientSales();
+}
+
+/* ------------------- Admin Functions (inventory) ------------------- */
+function addMedicine(){
+  const id=document.getElementById("medId").value.trim();
+  const name=document.getElementById("medName").value.trim();
+  const type=document.getElementById("medType").value.trim();
+  const price=parseFloat(document.getElementById("medPrice").value);
+  const qty=parseInt(document.getElementById("medQty").value);
+  const expiry=document.getElementById("medExpiry").value;
+  const imgInput=document.getElementById("medImg");
+  if(!id||!name||!type||isNaN(price)||isNaN(qty)||!expiry){ alert("Fill all fields & select image (image optional)!"); return; }
+  let imgURL = "";
+  if(imgInput.files.length>0){
+    imgURL = URL.createObjectURL(imgInput.files[0]);
+  }
+  const addedTime=new Date().toLocaleString();
+  const existing=medicines.find(m=>m.id===id);
+  if(existing){
+    existing.name=name; existing.type=type; existing.price=price; existing.quantity=qty; existing.expiry=expiry; if(imgURL) existing.img=imgURL; existing.addedTime=addedTime;
+  } else {
+    medicines.push({id,name,type,price,quantity:qty,expiry,img:imgURL,addedTime});
+  }
+  saveAll(); updateInventoryTable(); updateCustomerTable(); updatePatientTable(); updateDashboardSummary(); checkAlerts(); clearFields();
+}
+
+function updateInventoryTable(){
+  const tableBody=document.querySelector("#inventoryTable tbody"); tableBody.innerHTML="";
+  medicines.forEach((med) => {
+    const tr = document.createElement("tr");
+    tr.innerHTML = "<td>" + med.id + "</td>" +
+                   "<td>" + med.name + "</td>" +
+                   "<td>" + med.type + "</td>" +
+                   "<td>" + (typeof med.price === 'number' ? med.price.toFixed(2) : med.price) + "</td>" +
+                   "<td>" + med.quantity + "</td>" +
+                   "<td>" + med.expiry + "</td>" +
+                   "<td>" + (med.img ? ("<img class='medicine-img' src='" + med.img + "'>") : "") + "</td>" +
+                   "<td>" + med.addedTime + "</td>" +
+                   "<td><button onclick=\"editMedicine('" + med.id + "')\">Edit</button> <button onclick=\"deleteMedicine('" + med.id + "')\">Delete</button></td>";
+    tableBody.appendChild(tr);
+  });
+}
+
+/* ------------------- Sales & Purchase functions ------------------- */
+function buyMedicine(id){
+  // buyer can be customer or patient depending who's logged in
+  let buyer = null; let buyerType = null;
+  if(currentCustomer){ buyer = currentCustomer; buyerType = "customer"; }
+  else if(currentPatient){ buyer = currentPatient; buyerType = "patient"; }
+  else { alert("Please login as customer or patient to buy."); return; }
+
+  const med = medicines.find(m => m.id === id);
+  if(!med){ alert("Medicine not found."); return; }
+  const qtyStr = prompt("Enter quantity to buy (available: " + med.quantity + "):", "1");
+  const qty = parseInt(qtyStr);
+  if(isNaN(qty) || qty <= 0){ alert("Invalid quantity."); return; }
+  if(qty > med.quantity){ alert("Not enough stock."); return; }
+  const total = (med.price || 0) * qty;
+  med.quantity -= qty;
+  const time = new Date().toLocaleString();
+  sales.push({customer: buyer, medicine: med.name, qty, total, time, buyerType});
+  // add to customer's/patient's purchases
+  if(buyerType === "customer" && customers[buyer]){
+    customers[buyer].purchases.push({medicine: med.name, qty, total, time});
+  } else if(buyerType === "patient" && patients[buyer]){
+    patients[buyer].purchases.push({medicine: med.name, qty, total, time});
+  }
+  saveAll(); updateInventoryTable(); updateSalesTable(); updateCustomerSales(); updatePatientSales(); updateCustomerTable(); updatePatientTable(); updateDashboardSummary(); checkAlerts();
+  alert("Purchase successful. Total: " + total.toFixed(2));
+}
+
+function updateSalesTable(){
+  const tableBody = document.querySelector("#salesTable tbody"); tableBody.innerHTML = "";
+  sales.forEach(s => {
+    const tr = document.createElement("tr");
+    // resolve readable name for buyer
+    let buyerLabel = s.customer || '';
+    if(s.buyerType === 'customer' && customers[s.customer]) buyerLabel = 'Customer: ' + customers[s.customer].name + ' (' + s.customer + ')';
+    else if(s.buyerType === 'patient' && patients[s.customer]) buyerLabel = 'Patient: ' + patients[s.customer].name + ' (' + s.customer + ')';
+    else buyerLabel = (s.customer || '') + ' (' + (s.buyerType || '') + ')';
+    tr.innerHTML = "<td>" + buyerLabel + "</td>" +
+                   "<td>" + s.medicine + "</td>" +
+                   "<td>" + s.qty + "</td>" +
+                   "<td>" + (typeof s.total === 'number' ? s.total.toFixed(2) : s.total) + "</td>" +
+                   "<td>" + s.time + "</td>";
+    tableBody.appendChild(tr);
+  });
+}
+
+/* ------------------- Customers Table ------------------- */
+function updateCustomersTable(){
+  const tableBody = document.querySelector("#customersTable tbody"); tableBody.innerHTML = "";
+  Object.keys(customers).forEach(key => {
+    const c = customers[key];
+    const tr = document.createElement("tr");
+    tr.innerHTML = "<td>" + c.name + "</td>" +
+                   "<td>" + c.age + "</td>" +
+                   "<td>" + c.dob + "</td>" +
+                   "<td>" + c.blood + "</td>" +
+                   "<td>" + c.father + "</td>" +
+                   "<td>" + c.address + "</td>" +
+                   "<td>" + c.location + "</td>" +
+                   "<td>" + c.phone + "</td>" +
+                   "<td><button onclick=\"adminEditCustomer('" + key + "')\">Edit</button> <button onclick=\"adminDeleteCustomer('" + key + "')\" style=\"background:#c33;\">Delete</button></td>";
+    tableBody.appendChild(tr);
+  });
+}
+
+/* ------------------- Patients Table ------------------- */
+function updatePatientsTable(){
+  const tableBody = document.querySelector("#patientsTable tbody"); tableBody.innerHTML = "";
+  Object.keys(patients).forEach(key => {
+    const p = patients[key];
+    const tr = document.createElement("tr");
+    tr.innerHTML = "<td>" + (p.username || key) + "</td>" +
+                   "<td>" + p.name + "</td>" +
+                   "<td>" + p.age + "</td>" +
+                   "<td>" + p.dob + "</td>" +
+                   "<td>" + p.blood + "</td>" +
+                   "<td>" + p.phone + "</td>" +
+                   "<td>" + (p.email || "") + "</td>" +
+                   "<td>" + (p.emergency || "") + "</td>" +
+                   "<td>" + (p.notes || "") + "</td>" +
+                   "<td><button onclick=\"adminEditPatient('" + key + "')\">Edit</button> <button onclick=\"adminDeletePatient('" + key + "')\" style=\"background:#c33;\">Delete</button></td>";
+    tableBody.appendChild(tr);
+  });
+}
+
+/* ------------------- Admin: Customers CRUD ------------------- */
+let adminEditingCustomer = null;
+function showAdminCustomerForm(edit=false){
+  document.getElementById('adminCustomerForm').style.display='block';
+  document.getElementById('adminCustomerFormTitle').textContent = edit ? 'Edit Customer' : 'Add Customer';
+}
+function adminCancelCustomerForm(){
+  adminEditingCustomer = null;
+  document.getElementById('adminCustomerForm').style.display='none';
+  ['adminCustUsername','adminCustName','adminCustAge','adminCustDOB','adminCustBlood','adminCustFather','adminCustAddress','adminCustLocation','adminCustPhone'].forEach(id=>document.getElementById(id).value='');
+}
+function adminSaveCustomer(){
+  const uname = document.getElementById('adminCustUsername').value.trim() || null;
+  const name = document.getElementById('adminCustName').value.trim();
+  const age = document.getElementById('adminCustAge').value;
+  const dob = document.getElementById('adminCustDOB').value;
+  const blood = document.getElementById('adminCustBlood').value.trim();
+  const father = document.getElementById('adminCustFather').value.trim();
+  const address = document.getElementById('adminCustAddress').value.trim();
+  const location = document.getElementById('adminCustLocation').value.trim();
+  const phone = document.getElementById('adminCustPhone').value.trim();
+  if(!name||!age||!dob||!blood||!address||!phone){ alert('Fill required fields (Name, Age, DOB, Blood, Address, Phone)'); return; }
+  let key = uname || (name.replace(/\s+/g,'').toLowerCase() + Date.now());
+  // if editing and key changed, delete old
+  if(adminEditingCustomer && adminEditingCustomer !== key){ delete customers[adminEditingCustomer]; }
+  customers[key] = {name, age, dob, blood, father, address, location, phone, purchases: (customers[key] && customers[key].purchases) ? customers[key].purchases : [] };
+  saveAll(); adminEditingCustomer = null; adminCancelCustomerForm(); updateCustomersTable(); updateDashboardSummary();
+}
+function adminEditCustomer(key){
+  if(!customers[key]) return; adminEditingCustomer = key; showAdminCustomerForm(true);
+  const c = customers[key];
+  document.getElementById('adminCustUsername').value = key;
+  document.getElementById('adminCustName').value = c.name;
+  document.getElementById('adminCustAge').value = c.age;
+  document.getElementById('adminCustDOB').value = c.dob;
+  document.getElementById('adminCustBlood').value = c.blood;
+  document.getElementById('adminCustFather').value = c.father || '';
+  document.getElementById('adminCustAddress').value = c.address || '';
+  document.getElementById('adminCustLocation').value = c.location || '';
+  document.getElementById('adminCustPhone').value = c.phone || '';
+}
+function adminDeleteCustomer(key){
+  if(!customers[key]) return; if(!confirm('Delete customer "' + (customers[key].name||key) + '" ?')) return;
+  delete customers[key]; saveAll(); updateCustomersTable(); updateDashboardSummary();
+}
+
+/* ------------------- Admin: Patients CRUD ------------------- */
+let adminEditingPatient = null;
+function showAdminPatientForm(edit=false){
+  document.getElementById('adminPatientForm').style.display='block';
+  document.getElementById('adminPatientFormTitle').textContent = edit ? 'Edit Patient' : 'Add Patient';
+}
+function adminCancelPatientForm(){
+  adminEditingPatient = null;
+  document.getElementById('adminPatientForm').style.display='none';
+  ['adminPatUsername','adminPatName','adminPatAge','adminPatDOB','adminPatBlood','adminPatFather','adminPatAddress','adminPatLocation','adminPatPhone','adminPatEmail','adminPatGender','adminPatEmergency','adminPatNotes'].forEach(id=>document.getElementById(id).value='');
+}
+function adminSavePatient(){
+  const uname = document.getElementById('adminPatUsername').value.trim() || null;
+  const name = document.getElementById('adminPatName').value.trim();
+  const age = document.getElementById('adminPatAge').value;
+  const dob = document.getElementById('adminPatDOB').value;
+  const blood = document.getElementById('adminPatBlood').value.trim();
+  const father = document.getElementById('adminPatFather').value.trim();
+  const address = document.getElementById('adminPatAddress').value.trim();
+  const location = document.getElementById('adminPatLocation').value.trim();
+  const phone = document.getElementById('adminPatPhone').value.trim();
+  const email = document.getElementById('adminPatEmail').value.trim();
+  const gender = document.getElementById('adminPatGender').value;
+  const emergency = document.getElementById('adminPatEmergency').value.trim();
+  const notes = document.getElementById('adminPatNotes').value.trim();
+  if(!name||!age||!dob||!blood||!address||!phone){ alert('Fill required fields (Name, Age, DOB, Blood, Address, Phone)'); return; }
+  let key = uname || (name.replace(/\s+/g,'').toLowerCase() + Date.now());
+  if(adminEditingPatient && adminEditingPatient !== key){ delete patients[adminEditingPatient]; }
+  patients[key] = { username: key, name, age, dob, blood, father, address, location, phone, email, gender, emergency, notes, purchases: (patients[key] && patients[key].purchases) ? patients[key].purchases : [] };
+  saveAll(); adminEditingPatient = null; adminCancelPatientForm(); updatePatientsTable(); updateDashboardSummary();
+}
+function adminEditPatient(key){
+  if(!patients[key]) return; adminEditingPatient = key; showAdminPatientForm(true);
+  const p = patients[key];
+  document.getElementById('adminPatUsername').value = key;
+  document.getElementById('adminPatName').value = p.name;
+  document.getElementById('adminPatAge').value = p.age;
+  document.getElementById('adminPatDOB').value = p.dob;
+  document.getElementById('adminPatBlood').value = p.blood;
+  document.getElementById('adminPatFather').value = p.father || '';
+  document.getElementById('adminPatAddress').value = p.address || '';
+  document.getElementById('adminPatLocation').value = p.location || '';
+  document.getElementById('adminPatPhone').value = p.phone || '';
+  document.getElementById('adminPatEmail').value = p.email || '';
+  document.getElementById('adminPatGender').value = p.gender || '';
+  document.getElementById('adminPatEmergency').value = p.emergency || '';
+  document.getElementById('adminPatNotes').value = p.notes || '';
+}
+function adminDeletePatient(key){
+  if(!patients[key]) return; if(!confirm('Delete patient "' + (patients[key].name||key) + '" ?')) return;
+  delete patients[key]; saveAll(); updatePatientsTable(); updateDashboardSummary();
+}
+
+/* ------------------- UI Navigation ------------------- */
+function showSection(section){
+  document.getElementById("inventorySection").style.display = (section==="inventory") ? "block" : "none";
+  document.getElementById("salesSection").style.display = (section==="sales") ? "block" : "none";
+  document.getElementById("customersSection").style.display = (section==="customers") ? "block" : "none";
+  document.getElementById("patientsSection").style.display = (section==="patients") ? "block" : "none";
+}
+
+/* ------------------- Logout ------------------- */
+function logout(){
+  currentCustomer = null; currentPatient = null; currentRole = null;
+  document.getElementById("adminPage").style.display = "none";
+  document.getElementById("customerPage").style.display = "none";
+  document.getElementById("patientPage").style.display = "none";
+  document.getElementById("customerDetailsPage").style.display = "none";
+  document.getElementById("patientDetailsPage").style.display = "none";
+  document.getElementById("loginPage").style.display = "block";
+  updateUserBar(null, null);
+  populateCustomerPanel(); populatePatientPanel();
+}
+
+function updateUserBar(username, role){
+  const label = document.getElementById('currentUserLabel');
+  const quickSelect = document.getElementById('quickAddSelect');
+  const quickBtn = document.getElementById('quickAddBtn');
+  if(!username){
+    label.textContent = 'Not logged';
+    quickSelect.style.display = 'none'; quickBtn.style.display = 'none';
+    return;
+  }
+  label.textContent = username + (role ? (' ('+role+')') : '');
+  if(role === 'admin'){
+    quickSelect.style.display = 'inline-block'; quickBtn.style.display = 'inline-block';
+  } else {
+    quickSelect.style.display = 'none'; quickBtn.style.display = 'none';
+  }
+}
+
+function handleQuickAdd(){
+  const sel = document.getElementById('quickAddSelect').value;
+  if(!sel) return;
+  if(sel === 'customer'){
+    showSection('customers');
+    // open admin customer form
+    showAdminCustomerForm(false);
+  } else if(sel === 'patient'){
+    showSection('patients');
+    showAdminPatientForm(false);
+  }
+}
+
+/* ------------------- Customer/Patient top panels ------------------- */
+function populateCustomerPanel(){
+  const panel = document.getElementById('customerUserPanel');
+  if(!currentCustomer || !customers[currentCustomer]){ panel.style.display='none'; return; }
+  const c = customers[currentCustomer];
+  document.getElementById('custPanelName').textContent = c.name || currentCustomer;
+  document.getElementById('custPanelPhone').textContent = c.phone || '';
+  panel.style.display = 'block';
+}
+function populatePatientPanel(){
+  const panel = document.getElementById('patientUserPanel');
+  if(!currentPatient || !patients[currentPatient]){ panel.style.display='none'; return; }
+  const p = patients[currentPatient];
+  document.getElementById('patPanelName').textContent = p.name || currentPatient;
+  document.getElementById('patPanelPhone').textContent = p.phone || '';
+  panel.style.display = 'block';
+}
+
+function editCustomerFromPanel(){
+  // open customer details form prefilled for currentCustomer
+  if(!currentCustomer || !customers[currentCustomer]) return;
+  const c = customers[currentCustomer];
+  // prefill admin/customer details form
+  document.getElementById('custName').value = c.name || '';
+  document.getElementById('custAge').value = c.age || '';
+  document.getElementById('custDOB').value = c.dob || '';
+  document.getElementById('custBlood').value = c.blood || '';
+  document.getElementById('custFather').value = c.father || '';
+  document.getElementById('custAddress').value = c.address || '';
+  document.getElementById('custLocation').value = c.location || '';
+  document.getElementById('custPhone').value = c.phone || '';
+  // show customer details page form
+  document.getElementById('customerPage').style.display='none';
+  document.getElementById('customerDetailsPage').style.display='block';
+}
+
+function editPatientFromPanel(){
+  if(!currentPatient || !patients[currentPatient]) return;
+  const p = patients[currentPatient];
+  document.getElementById('patName').value = p.name || '';
+  document.getElementById('patAge').value = p.age || '';
+  document.getElementById('patDOB').value = p.dob || '';
+  document.getElementById('patBlood').value = p.blood || '';
+  document.getElementById('patFather').value = p.father || '';
+  document.getElementById('patAddress').value = p.address || '';
+  document.getElementById('patLocation').value = p.location || '';
+  document.getElementById('patPhone').value = p.phone || '';
+  document.getElementById('patEmail').value = p.email || '';
+  document.getElementById('patGender').value = p.gender || '';
+  document.getElementById('patAddress').value = p.Address || '';
+  document.getElementById('patNotes').value = p.notes || '';
+  document.getElementById('patientPage').style.display='none';
+  document.getElementById('patientDetailsPage').style.display='block';
+}
+
+/* ------------------- Customer view & search ------------------- */
+function filterMedicines(){
+  const filter = document.getElementById("problemFilter").value;
+  updateCustomerTable(filter);
+}
+function filterMedicinesForPatient(){
+  const filter = document.getElementById("patProblemFilter").value;
+  updatePatientTable(filter);
+}
+function filterMedicinesForCustomer(){
+  const q = document.getElementById("custSearch").value.trim().toLowerCase();
+  updateCustomerTable("", q);
+}
+function searchInventory(){
+  const q = document.getElementById("invSearch").value.trim().toLowerCase();
+  const tableBody = document.querySelector("#inventoryTable tbody"); tableBody.innerHTML="";
+  const list = medicines.filter(m => !q || m.name.toLowerCase().includes(q));
+  list.forEach(m => {
+    const tr = document.createElement("tr");
+    tr.innerHTML = "<td>" + m.id + "</td>" +
+                   "<td>" + m.name + "</td>" +
+                   "<td>" + m.type + "</td>" +
+                   "<td>" + (typeof m.price === 'number' ? m.price.toFixed(2) : m.price) + "</td>" +
+                   "<td>" + m.quantity + "</td>" +
+                   "<td>" + m.expiry + "</td>" +
+                   "<td>" + (m.img ? ("<img class='medicine-img' src='" + m.img + "'>") : "") + "</td>" +
+                   "<td>" + m.addedTime + "</td>" +
+                   "<td><button onclick=\"editMedicine('" + m.id + "')\">Edit</button> <button onclick=\"deleteMedicine('" + m.id + "')\">Delete</button></td>";
+    tableBody.appendChild(tr);
+  });
+}
+function clearInventoryFilters(){ document.getElementById("invSearch").value=""; updateInventoryTable(); }
+
+/* ------------------- Update customer/patient table view ------------------- */
+function updateCustomerTable(filter="", searchQuery=""){
+  const tableBody = document.querySelector("#customerTable tbody"); tableBody.innerHTML = "";
+  const list = medicines.filter(m => (!filter || m.type === filter) && (!searchQuery || m.name.toLowerCase().includes(searchQuery)));
+  list.forEach(m => {
+    const tr = document.createElement("tr");
+    tr.innerHTML = "<td>" + m.name + "</td>" +
+                   "<td>" + m.type + "</td>" +
+                   "<td>" + (typeof m.price === 'number' ? m.price.toFixed(2) : m.price) + "</td>" +
+                   "<td>" + m.quantity + "</td>" +
+                   "<td>" + m.expiry + "</td>" +
+                   "<td>" + (m.img ? ("<img class='medicine-img' src='" + m.img + "'>") : "") + "</td>" +
+                   "<td><button onclick=\"buyMedicine('" + m.id + "')\">Buy</button></td>";
+    tableBody.appendChild(tr);
+  });
+}
+function updatePatientTable(filter="", searchQuery=""){
+  const tableBody = document.querySelector("#patientTable tbody"); tableBody.innerHTML = "";
+  const list = medicines.filter(m => (!filter || m.type === filter) && (!searchQuery || m.name.toLowerCase().includes(searchQuery)));
+  list.forEach(m => {
+    const tr = document.createElement("tr");
+    tr.innerHTML = "<td>" + m.name + "</td>" +
+                   "<td>" + m.type + "</td>" +
+                   "<td>" + (typeof m.price === 'number' ? m.price.toFixed(2) : m.price) + "</td>" +
+                   "<td>" + m.quantity + "</td>" +
+                   "<td>" + m.expiry + "</td>" +
+                   "<td>" + (m.img ? ("<img class='medicine-img' src='" + m.img + "'>") : "") + "</td>" +
+                   "<td><button onclick=\"buyMedicine('" + m.id + "')\">Buy</button></td>";
+    tableBody.appendChild(tr);
+  });
+}
+
+/* ------------------- Customer/PATIENT Sales history ------------------- */
+function updateCustomerSales(){
+  const tableBody = document.querySelector("#customerSalesTable tbody"); tableBody.innerHTML = "";
+  if(!currentCustomer || !customers[currentCustomer]) return;
+  customers[currentCustomer].purchases.forEach(p => {
+    const tr = document.createElement("tr");
+    tr.innerHTML = "<td>" + p.medicine + "</td>" +
+                   "<td>" + p.qty + "</td>" +
+                   "<td>" + (typeof p.total === 'number' ? p.total.toFixed(2) : p.total) + "</td>" +
+                   "<td>" + p.time + "</td>";
+    tableBody.appendChild(tr);
+  });
+}
+function updatePatientSales(){
+  const tableBody = document.querySelector("#patientSalesTable tbody"); tableBody.innerHTML = "";
+  if(!currentPatient || !patients[currentPatient]) return;
+  patients[currentPatient].purchases.forEach(p => {
+    const tr = document.createElement("tr");
+    tr.innerHTML = "<td>" + p.medicine + "</td>" +
+                   "<td>" + p.qty + "</td>" +
+                   "<td>" + (typeof p.total === 'number' ? p.total.toFixed(2) : p.total) + "</td>" +
+                   "<td>" + p.time + "</td>";
+    tableBody.appendChild(tr);
+  });
+}
+
+/* ------------------- Edit/Delete medicine ------------------- */
+function clearFields(){
+  document.getElementById("medId").value = "";
+  document.getElementById("medName").value = "";
+  document.getElementById("medType").value = "";
+  document.getElementById("medPrice").value = "";
+  document.getElementById("medQty").value = "";
+  document.getElementById("medExpiry").value = "";
+  document.getElementById("medImg").value = "";
+}
+function editMedicine(id){
+  const med = medicines.find(m => m.id === id);
+  if(!med) return;
+  document.getElementById("medId").value = med.id;
+  document.getElementById("medName").value = med.name;
+  document.getElementById("medType").value = med.type;
+  document.getElementById("medPrice").value = med.price;
+  document.getElementById("medQty").value = med.quantity;
+  document.getElementById("medExpiry").value = med.expiry;
+}
+function deleteMedicine(id){
+  medicines = medicines.filter(m => m.id !== id);
+  saveAll(); updateInventoryTable(); updateCustomerTable(); updatePatientTable(); updateSalesTable(); updateDashboardSummary(); checkAlerts();
+}
+
+/* ------------------- Alerts & Dashboard ------------------- */
+function checkAlerts(){
+  const alertsDiv = document.getElementById("alerts");
+  alertsDiv.innerHTML = "";
+  // stock alert
+  const lowStock = medicines.filter(m => m.quantity < 5);
+  if(lowStock.length > 0){
+    const el = document.createElement("div");
+    el.className = "alert stock";
+    el.textContent = "Low stock: " + lowStock.map(m=>m.name + " ("+m.quantity+")").join(", ");
+    alertsDiv.appendChild(el);
+  }
+  // expiry alert (within 30 days)
+  const nearExpiry = medicines.filter(m => {
+    if(!m.expiry) return false;
+    const days = daysBetween(m.expiry);
+    return days <= 30;
+  });
+  if(nearExpiry.length > 0){
+    const el2 = document.createElement("div");
+    el2.className = "alert expiry";
+    el2.textContent = "Near expiry: " + nearExpiry.map(m=>m.name + " ("+m.expiry+")").join(", ");
+    alertsDiv.appendChild(el2);
+  }
+}
+
+function updateDashboardSummary(){
+  const root = document.getElementById("dashboardSummary");
+  root.innerHTML = "";
+  const totalMeds = medicines.length;
+  const totalCustomers = Object.keys(customers).length;
+  const totalPatients = Object.keys(patients).length;
+  const totalSales = sales.reduce((s, x) => s + (parseFloat(x.total)||0), 0);
+  const cards = [
+    {title:"Total Medicines", value: totalMeds},
+    {title:"Total Customers", value: totalCustomers},
+    {title:"Total Patients", value: totalPatients},
+    {title:"Total Sales (₹)", value: totalSales.toFixed(2)}
+  ];
+  cards.forEach(c => {
+    const div = document.createElement("div"); div.className = "card";
+    div.innerHTML = "<div style='font-size:1.1em; font-weight:bold;'>" + c.value + "</div><div style='color:#666;'>" + c.title + "</div>";
+    root.appendChild(div);
+  });
+}
+
+/* ------------------- Helper to update everything visible ------------------- */
+function updateAllTables(){
+  updateInventoryTable(); updateSalesTable(); updateCustomersTable(); updatePatientsTable();
+  updateDashboardSummary(); checkAlerts();
+}
+
+/* ------------------- Search helpers for patient and customer pages ------------------- */
+function filterMedicinesForCustomer(){
+  const filter = document.getElementById("problemFilter").value;
+  const q = document.getElementById("custSearch").value.trim().toLowerCase();
+  updateCustomerTable(filter, q);
+}
+function filterMedicinesForPatient(){
+  const filter = document.getElementById("patProblemFilter").value;
+  const q = document.getElementById("patSearch").value.trim().toLowerCase();
+  updatePatientTable(filter, q);
+}
+
+/* ------------------- Dark mode toggle ------------------- */
+let dark = false;
+function toggleDarkMode(){
+  dark = !dark;
+  if(dark){
+    document.documentElement.style.setProperty('background','#222');
+    document.body.style.background = '#111';
+    document.body.style.color = '#eee';
+    document.getElementById("darkToggle").textContent = "Light mode";
+  } else {
+    document.documentElement.style.removeProperty('background');
+    document.body.style.background = '#f0f2f5';
+    document.body.style.color = '#111';
+    document.getElementById("darkToggle").textContent = "Dark mode";
+  }
+}
+
+/* ------------------- Final initialization call ------------------- */
+updateAllTables();
+
+</script>
+</body>
+</html>

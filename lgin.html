@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Sanjai's Co. Pharmacy - Home</title>
+<link rel="icon" href="icon.jpg">
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; font-family: 'Segoe UI', sans-serif; }
+  body, html { height:100%; overflow-x:hidden; }
+
+  /* Header / Logo */
+  header {
+    position:fixed; top:0; left:0; width:100%; padding:10px 20px; z-index:10;
+    display:flex; align-items:center; justify-content:flex-start;
+  }
+  .logo-circle {
+    width:60px; height:60px; background:#4CAF50; color:white; border-radius:50%; display:flex;
+    justify-content:center; align-items:center; font-weight:bold; font-size:0.9rem; box-shadow:0 4px 10px rgba(0,0,0,0.3);
+  }
+
+  /* Hero Section */
+  .hero {
+    width:100%; height:100vh; background: linear-gradient(135deg,#4CAF50,#81C784);
+    display:flex; flex-direction:column; justify-content:center; align-items:center; color:white; text-align:center; position:relative;
+    overflow:hidden; padding-top:70px;
+  }
+  .hero h1 { font-size:3rem; margin-bottom:20px; text-shadow:2px 2px 15px rgba(0,0,0,0.6); }
+  .hero p { font-size:1.5rem; margin-bottom:30px; text-shadow:1px 1px 10px rgba(0,0,0,0.5); }
+
+  .hero .btn { padding:15px 35px; margin:10px; font-size:1.1rem; border:none; border-radius:50px; cursor:pointer; transition:0.4s; font-weight:bold; box-shadow: 0 8px 15px rgba(0,0,0,0.3);}
+  .btn-login { background:#fff; color:#4CAF50; }
+  .btn-login:hover { background:#f0f0f0; transform:scale(1.1); box-shadow:0 12px 20px rgba(0,0,0,0.4);}
+  .btn-explore { background:rgba(255,255,255,0.2); color:white; border:2px solid white; }
+  .btn-explore:hover { background:white; color:#4CAF50; transform:scale(1.1); }
+
+  /* Explore Fullscreen Section */
+  .explore-page {
+    display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:#f4f4f4; color:#333; z-index:1000; overflow-y:auto;
+    padding:20px 50px;
+  }
+  .explore-page h2 { font-size:2.5rem; margin-bottom:20px; text-align:center; color:#4CAF50; }
+  .explore-close { position:absolute; top:20px; right:30px; font-size:2rem; cursor:pointer; color:#333; }
+
+  /* Explore Cards */
+  .card-container { display:flex; flex-wrap:wrap; justify-content:center; gap:25px; margin-top:40px; }
+  .card {
+    background:white; border-radius:15px; padding:25px; width:300px; box-shadow:0 8px 20px rgba(0,0,0,0.2);
+    transition:0.3s; text-align:center;
+  }
+  .card:hover { transform:translateY(-10px); box-shadow:0 12px 25px rgba(0,0,0,0.3);}
+  .card h3 { color:#4CAF50; margin-bottom:10px; }
+  .card p { font-size:0.95rem; }
+
+  /* Help Section */
+  .help-section { margin-top:50px; text-align:center; }
+  .help-section h3 { color:#4CAF50; margin-bottom:15px; }
+  .help-section p { font-size:1rem; max-width:600px; margin:0 auto; line-height:1.5; }
+
+  /* Footer */
+  footer { text-align:center; padding:15px 0; background:rgba(0,0,0,0.3); color:white; font-size:0.9rem; position:relative; margin-top:50px; }
+
+  @media(max-width:768px){
+    .hero h1 { font-size:2.2rem; }
+    .hero p { font-size:1.2rem; }
+    .hero .btn { font-size:1rem; padding:12px 25px; }
+    .card { width:90%; }
+  }
+  /* Button click glow effect */
+@keyframes buttonGlow {
+  0% { box-shadow: 0 0 0px rgba(255, 255, 255, 0.7); transform: scale(1); }
+  50% { box-shadow: 0 0 25px rgba(255, 255, 255, 1); transform: scale(1.2); }
+  100% { box-shadow: 0 0 0px rgba(255, 255, 255, 0.7); transform: scale(1); }
+}
+.btn-clicked {
+  animation: buttonGlow 0.6s ease-in-out;
+}
+/* Walking Medicine Animation */
+.medicine-container {
+  position: fixed;
+  bottom: 20px;
+  left: 0;
+  width: 100%;
+  height: 100px;
+  pointer-events: none;
+  display: none;
+  z-index: 1500;
+  overflow: hidden;
+}
+
+.medicine {
+  position: absolute;
+  bottom: 0;
+  animation: walkAcross 6s linear forwards;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  font-size: 0.9rem;
+  color: #4CAF50;
+  text-shadow: 0 0 3px white;
+  font-weight: bold;
+}
+
+.medicine img {
+  width: 60px;
+  height: 60px;
+  object-fit: contain;
+  animation: bounce 0.8s ease-in-out infinite alternate;
+}
+
+@keyframes walkAcross {
+  0% { transform: translateX(-100px); opacity: 1; }
+  90% { opacity: 1; }
+  100% { transform: translateX(110vw); opacity: 0; }
+}
+
+@keyframes bounce {
+  from { transform: translateY(0); }
+  to { transform: translateY(-15px); }
+}
+/* Jump-in text animation */
+@keyframes jumpIn {
+  0% { transform: translateY(100px) scale(0.8); opacity: 0; }
+  50% { transform: translateY(-20px) scale(1.1); opacity: 1; }
+  70% { transform: translateY(10px) scale(1); }
+  100% { transform: translateY(0) scale(1); opacity: 1; }
+}
+
+.hero h1 {
+  animation: jumpIn 1.5s ease-out;
+}
+@keyframes fadeInUp {
+  0% { opacity: 0; transform: translateY(30px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+.hero p {
+  animation: fadeInUp 1.5s ease-out;
+  animation-delay: 1.2s;
+  animation-fill-mode: both;
+}
+
+
+</style>
+</head>
+<body>
+
+<!-- Centered Logo and Company Name -->
+<!-- Centered Logo and Company Name with Top Background -->
+<!-- Centered Logo and Company Name -->
+<!-- Centered Logo and Company Name with Top Background -->
+<div style="display:flex; flex-direction:column; align-items:center; 
+            background: linear-gradient(90deg, #5b45b5, #c79750);
+            padding:20px 0; box-shadow: 0 4px 10px rgba(0,0,0,0.3);">
+    <img src="pharmacy.jpg" alt="Company Logo" 
+         style="width:120px; height:120px; border-radius:50%; object-fit:cover; 
+                box-shadow:0 4px 15px rgba(0,0,0,0.4); margin-bottom:10px;">
+    <h2 style="color:rgb(23, 14, 20); font-size:2.5rem; text-align:center; font-weight:bold;">
+        The Sanjai's Co. Pharmacy💊
+    </h2>
+</div>
+
+
+
+<div class="hero" style="
+    height:70vh; 
+    background: linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.4)), 
+                url('https://img.freepik.com/premium-photo/pharmacology-pharmaceuticals-healthcare-background-with-copy-space-generative-ai-illustration_839051-1664.jpg') 
+                center/cover no-repeat;
+    display:flex; 
+    flex-direction:column; 
+    justify-content:center; 
+    align-items:center; 
+    color:white; 
+    text-align:center;
+    padding:0 20px;
+">
+  <h1 style="font-size:2.8rem; text-shadow: 2px 2px 12px rgba(0,0,0,0.7);">Welcome to The Sanjai's Co. Pharmacy</h1>
+  <p style="font-size:1.3rem; margin-bottom:25px; text-shadow: 1px 1px 10px rgba(0,0,0,0.6);">
+    Your health, our priority. Fast. Reliable. Trusted.
+  </p>
+  <div>
+    <button class="btn btn-login" onclick="goToLogin()">Login</button>
+    <button class="btn btn-explore" onclick="openExplore()">Explore</button>
+  </div>
+</div>
+
+
+<!-- Explore Fullscreen Page -->
+<div id="explorePage" class="explore-page">
+  <span class="explore-close" onclick="closeExplore()">&times;</span>
+  <h2>Explore Our Pharmacy</h2>
+
+  <div class="card-container">
+    <div class="card">
+      <h3>Website Usage</h3>
+      <p>Daily Visitors: 120<br>Top Services Accessed: Medicines List, Online Orders, Support</p>
+    </div>
+    <div class="card">
+      <h3>Management</h3>
+      <p>Admin: Sanjai Murugan<br>Support Staff: 5 Members<br>Operations Handled Efficiently</p>
+    </div>
+    <div class="card">
+      <h3>Location & Contact</h3>
+      <p>123 Health Street, Heart city, State<br>📲+91-9876543210<br>🅾Instagram.com<br>support@sanjai-pharmacy.com</p>
+    </div>
+    <div class="card">
+      <h3>Business Stats</h3>
+      <p>Daily Sales: 200+ Orders<br>Customer Satisfaction: 98%<br>Pharmacy Trusted by Thousands</p>
+    </div>
+  </div>
+
+  <div class="help-section">
+    <h3>Need Help?</h3>
+    <p>If you need assistance, our support team is available 24/7. Click on the contact info above to reach us. We are here to guide you and ensure a smooth experience for your pharmacy needs.</p>
+  </div>
+</div>
+
+<footer>
+  &copy; 2025 The Sanjai's Co. Pharmacy. All Rights Reserved.
+  <!-- Walking Medicines Animation -->
+<div class="medicine-container" id="medicineContainer">
+  <div class="medicine" style="left:5%;">
+    <img src="https://cdn-icons-png.flaticon.com/512/1532/1532682.png" alt="Tablet">
+    💊 Tablet
+  </div>
+  <div class="medicine" style="left:25%;">
+    <img src="https://cdn-icons-png.flaticon.com/512/2927/2927351.png" alt="Syrup">
+    🧴 Syrup
+  </div>
+  <div class="medicine" style="left:45%;">
+    <img src="https://cdn-icons-png.flaticon.com/512/4333/4333609.png" alt="Ointment">
+    💧 Ointment
+  </div>
+  <div class="medicine" style="left:65%;">
+    <img src="https://cdn-icons-png.flaticon.com/512/4341/4341033.png" alt="Capsule">
+    💊 Capsule
+  </div>
+  <div class="medicine" style="left:85%;">
+    <img src="https://cdn-icons-png.flaticon.com/512/744/744555.png" alt="Bandage">
+    🩹 Bandage
+  </div>
+</div>
+
+</footer>
+
+<script>
+function goToLogin(){
+  window.location.href = "pharmacy_pro.html"; 
+}
+function openExplore(){
+  document.getElementById("explorePage").style.display = "block";
+}
+function closeExplore(){
+  document.getElementById("explorePage").style.display = "none";
+}
+function goToLogin(){
+  const btn = document.querySelector(".btn-login");
+  const meds = document.getElementById("medicineContainer");
+  btn.classList.add("btn-clicked");
+
+  // Show the walking medicine animation
+  setTimeout(() => {
+    meds.style.display = "block";
+  }, 200);
+
+  // Redirect after animation ends
+  setTimeout(() => {
+    meds.style.display = "none";
+    window.location.href = "pharmacy_pro.html"; 
+  }, 3500);
+}
+
+  
+ 
+
+</script>
+
+</body>
+
+</html>
