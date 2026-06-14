@@ -1,0 +1,1 @@
+Pharmacy Management System is a Java-based application that simplifies pharmacy operations by managing medicines, inventory, billing, sales, suppliers, and customer records. It provides secure data management, reduces manual effort, and improves efficiency and accuracy in daily pharmacy management.
